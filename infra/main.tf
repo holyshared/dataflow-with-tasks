@@ -28,3 +28,11 @@ module "project-factory" {
     "storage.googleapis.com",
   ]
 }
+
+resource "google_storage_bucket" "logs" {
+  project  = module.project-factory.project_id
+  name     = "logs-${module.project-factory.project_id}"
+  location = "asia-northeast1"
+
+  force_destroy = true
+}
