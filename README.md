@@ -1,8 +1,48 @@
 # dataflow-with-tasks
 
+## Setup
+
+```
+brew update
+brew install pyenv
+pyenv install 3.8.11
+pyenv virtualenv 3.8.11 dataflow
+pyenv local dataflow
+```
+
+## Setup for project
+
+### apache-beam
+
 ```shell
-install --upgrade virtualenv --user
-python3 -m virtualenv env
+pip install --upgrade virtualenv
+python -m virtualenv env
 source env/bin/activate
-pip3 install --quiet apache-beam[gcp]
+pip install --quiet apache-beam[gcp]
+```
+
+### GCP
+
+```
+terraform init
+terraform apply
+```
+
+## Run dataflow example
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=[CREDENTIALS_FILE] \
+python -m \
+  apache_beam.examples.wordcount \
+  --project \
+  [PROJECT_ID] \
+  --runner DataflowRunner \
+  --temp_location \
+  gs://[BUCKET_NAME]/temp \
+  --output \
+  gs://[BUCKET_NAME]/results/output \
+  --job_name dataflow-intro \
+  --region asia-northeast1 \
+  --service_account_email [SERVICE_ACCOUNT_EMAIL] \
+  --subnetwork=https://www.googleapis.com/compute/v1/projects/[PROJECT_ID]/regions/asia-northeast1/subnetworks/[NETWORK_NAME]
 ```
