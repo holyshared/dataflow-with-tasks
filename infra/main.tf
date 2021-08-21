@@ -28,6 +28,7 @@ module "project-factory" {
     "dataflow.googleapis.com",
     "logging.googleapis.com",
     "storage.googleapis.com",
+    "cloudbuild.googleapis.com"
   ]
 }
 
@@ -61,6 +62,13 @@ resource "google_project_iam_member" "object_manager" {
   member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
 }
 
+# XXX remove?
+resource "google_project_iam_member" "build_editor" {
+  project = module.project-factory.project_id
+  role    = "roles/cloudbuild.builds.editor"
+  member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
+}
+
 resource "time_rotating" "dataflow_key_rotation" {
   rotation_days = 30
 }
@@ -84,4 +92,26 @@ resource "google_storage_bucket" "logs" {
   location = "asia-northeast1"
 
   force_destroy = true
+}
+
+resource "google_cloudbuild_trigger" "flex_template_trigger" {
+  name = "extract-json-field"
+  project = module.project-factory.project_id
+
+  github {
+    name  = "dataflow-with-tasks"
+    owner = "holyshared"
+
+    push {
+      branch       = "flex-template"
+      invert_regex = false
+    }
+  }
+
+  substitutions = {
+    _PROJECT_ID=module.project-factory.project_id
+    _IMAGE_NAME="extract_json_field"
+  }
+
+  filename = "cloudbuild.yaml"
 }
