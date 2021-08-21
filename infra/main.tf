@@ -111,7 +111,7 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
     owner = "holyshared"
 
     push {
-      branch       = "flex-template"
+      branch       = "main"
       invert_regex = false
     }
   }
