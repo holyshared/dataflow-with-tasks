@@ -113,5 +113,5 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
     _IMAGE_NAME="extract_json_field"
   }
 
-  filename = "cloudbuild.yaml"
+  filename = "cloudbuild.yml"
 }
