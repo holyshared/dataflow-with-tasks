@@ -18,3 +18,5 @@ steps:
   - PYTHON
   - --metadata-file
   - metadata.json
+  - --service-account-email
+  - ${_SERVICE_ACCOUNT_EMAIL}
