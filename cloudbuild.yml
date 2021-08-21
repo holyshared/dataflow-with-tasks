@@ -10,7 +10,8 @@ steps:
   - gcloud
   - dataflow
   - flex-template
-  - build "{$_TEMPLATE_PATH}"
+  - build
+  - ${_TEMPLATE_PATH}
   - --image=gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}
   - --sdk-language="PYTHON"
   - --metadata-file="metadata.json"
