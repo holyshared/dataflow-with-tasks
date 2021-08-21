@@ -1,0 +1,16 @@
+{
+  "name": "Extract id attribute",
+  "description": "Extract id attribute from json file log",
+  "parameters": [
+    {
+      "name": "input",
+      "label": "json log file",
+      "helpText": "json format log file"
+    },
+    {
+      "name": "output",
+      "label": "ID attribute file",
+      "helpText": "ID attribute file retrieved from json"
+    }
+  ]
+}
