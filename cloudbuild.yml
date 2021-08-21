@@ -14,4 +14,4 @@ steps:
   - ${_TEMPLATE_PATH}
   - --image=gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}
   - --sdk-language="PYTHON"
-  - --metadata-file="metadata.json"
+  - --metadata-file="./metadata.json"
