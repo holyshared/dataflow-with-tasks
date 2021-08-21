@@ -94,6 +94,14 @@ resource "google_storage_bucket" "logs" {
   force_destroy = true
 }
 
+resource "google_storage_bucket" "flex_templates" {
+  project  = module.project-factory.project_id
+  name     = "flex-templates-${module.project-factory.project_id}"
+  location = "asia-northeast1"
+
+  force_destroy = true
+}
+
 resource "google_cloudbuild_trigger" "flex_template_trigger" {
   name = "extract-json-field"
   project = module.project-factory.project_id
@@ -111,6 +119,7 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
   substitutions = {
     _PROJECT_ID=module.project-factory.project_id
     _IMAGE_NAME="extract_json_field"
+    _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/extract_json_field.json"
   }
 
   filename = "cloudbuild.yml"
