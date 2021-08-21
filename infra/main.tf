@@ -120,6 +120,7 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
     _PROJECT_ID=module.project-factory.project_id
     _IMAGE_NAME="extract_json_field"
     _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/extract_json_field.json"
+    _SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_service_account.email
   }
 
   filename = "cloudbuild.yml"
