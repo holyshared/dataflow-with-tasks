@@ -5,6 +5,7 @@ const client = new FlexTemplatesServiceClient({
   projectId: process.env.GCP_PROJECT_ID,
 })
 
+// https://dataflow.googleapis.com/v1b3/projects/{projectId}/locations/{location}/flexTemplates:launch?
 client.launchFlexTemplate({
   projectId: process.env.GCP_PROJECT_ID,
   location: process.env.GCP_REGION,
