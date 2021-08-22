@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "job:create": "ts-node create-job.ts"
+  },
+  "dependencies": {
+    "@google-cloud/dataflow": "^1.0.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.2.1",
+    "typescript": "^4.3.5"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["es2019"],
+    "module": "commonjS"
+  },
+  "include": [
+    "create-job.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,27 @@
+import { FlexTemplatesServiceClient } from "@google-cloud/dataflow"
+import { v4 } from "uuid"
+
+const client = new FlexTemplatesServiceClient({
+  projectId: process.env.GCP_PROJECT_ID,
+})
+
+client.launchFlexTemplate({
+  projectId: process.env.GCP_PROJECT_ID,
+  location: process.env.GCP_REGION,
+  launchParameter: {
+    jobName: `extract-json-field-${v4()}`,
+    containerSpecGcsPath: process.env.GCP_CONTAINER_SPEC_PATH,
+    parameters: {
+      input: process.env.GCP_INPUT,
+      output: process.env.GCP_OUTPUT,
+    },
+    environment: {
+      subnetwork: process.env.GCP_SUBNETWORK,
+      serviceAccountEmail: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
+    }
+  }
+}).then(([res, req]) => {
+  console.log("job %s created", res.job.name)
+}).catch(err => {
+  console.log(err.stack)
+})
