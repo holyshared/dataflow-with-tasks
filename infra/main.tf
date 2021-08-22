@@ -86,6 +86,24 @@ resource "google_compute_network" "vpc_network" {
   name = "dataflow-vpc-network"
 }
 
+resource "google_compute_firewall" "dataflow_firewall" {
+  project  = module.project-factory.project_id
+  name    = "dataflow-firewall"
+  network = google_compute_network.vpc_network.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["12345-12346"]
+  }
+
+  priority = 0
+
+  target_tags = ["dataflow"]
+  source_tags = ["dataflow"]
+}
+
 resource "google_storage_bucket" "logs" {
   project  = module.project-factory.project_id
   name     = "logs-${module.project-factory.project_id}"
