@@ -1,4 +1,5 @@
 import { GoogleAuth } from "google-auth-library"
+import { v4 } from "uuid"
 
 const auth = new GoogleAuth({
   scopes: 'https://www.googleapis.com/auth/cloud-platform',
@@ -13,7 +14,7 @@ const launchFlexTemplate = async (): Promise<{ job:{ name: string } }> => {
     method: "POST",
     body: JSON.stringify({
       launchParameter: {
-        jobName: "xxx",
+        jobName: `extract-json-field-${v4()}`,
         containerSpecGcsPath: process.env.GCP_CONTAINER_SPEC_PATH,
         parameters: {
           input: process.env.GCP_INPUT,
