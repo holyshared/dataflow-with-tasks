@@ -1,9 +1,11 @@
 {
   "scripts": {
-    "job:create": "ts-node create-job.ts"
+    "job:create": "ts-node sdk-create-job.ts",
+    "job:create:api": "ts-node auth-create-job.ts"
   },
   "dependencies": {
     "@google-cloud/dataflow": "^1.0.2",
+    "google-auth-library": "^7.6.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
