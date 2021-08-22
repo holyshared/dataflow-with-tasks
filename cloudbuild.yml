@@ -13,7 +13,7 @@ steps:
   - build
   - ${_TEMPLATE_PATH}
   - --image
-  - gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}
+  - gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:latest
   - --sdk-language
   - PYTHON
   - --metadata-file
