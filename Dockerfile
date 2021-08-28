@@ -11,5 +11,4 @@ COPY example/extract_json_field.py ./example/extract_json_field.py
 ENV FLEX_TEMPLATE_PYTHON_REQUIREMENTS_FILE="${WORKDIR}/requirements.txt"
 ENV FLEX_TEMPLATE_PYTHON_PY_FILE="${WORKDIR}/example/extract_json_field.py"
 
-RUN pip install -U --quiet apache-beam[gcp]
 RUN pip install -U -r ./requirements.txt

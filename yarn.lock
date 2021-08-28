@@ -14,10 +14,10 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@google-cloud/dataflow@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@google-cloud/dataflow/-/dataflow-1.0.2.tgz#30bf468d770ddf94149f391833ad87f0192c934c"
-  integrity sha512-E1pjPO2zH9LCuABvsziuuWRe3jA5ty37RF/bDWdctqPEMipSSXpKDGcls1aTJwjEWQaZAG1+5FWuZrDKsuVo8A==
+"@google-cloud/dataflow@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/dataflow/-/dataflow-1.1.0.tgz#cd1751084b65c2b767ae8f9907b98d4ff69ff4a8"
+  integrity sha512-XVqCACwFECXAfNIjMRPBVyvqprMQ/QvYT6RA6IhZY7O2EbsczyRPcNn3li/8Ha+sA6WnTmHOrg+fMFPhvZhmUg==
   dependencies:
     google-gax "^2.24.1"
 
