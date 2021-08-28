@@ -1,4 +1,5 @@
 {
+  "main": "dist/index.js",
   "scripts": {
     "job:create": "ts-node scripts/sdk-create-job.ts",
     "job:create:api": "ts-node scripts/auth-create-job.ts",
