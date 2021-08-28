@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "lib": ["es2019"],
-    "module": "commonjS"
+    "module": "commonjS",
+    "outDir": "./dist",
   },
   "include": [
-    "create-job.ts"
+    "task"
   ],
   "exclude": [
     "node_modules"

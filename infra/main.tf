@@ -90,6 +90,17 @@ resource "google_project_iam_member" "function_invoker" {
   member  = "serviceAccount:${google_service_account.dataflow_function_service_account.email}"
 }
 
+resource "google_project_iam_member" "cloudbuild_cloud_functions_developer" {
+  project = module.project-factory.project_id
+  role    = "roles/cloudfunctions.developer"
+  member  = "serviceAccount:${module.project-factory.project_number}@cloudbuild.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_service_account_user" {
+  project = module.project-factory.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${module.project-factory.project_number}@cloudbuild.gserviceaccount.com"
+}
 
 resource "time_rotating" "dataflow_key_rotation" {
   rotation_days = 30

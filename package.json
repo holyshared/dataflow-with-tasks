@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "job:create": "ts-node sdk-create-job.ts",
-    "job:create:api": "ts-node auth-create-job.ts",
-    "build": "tsc task.ts"
+    "job:create": "ts-node scripts/sdk-create-job.ts",
+    "job:create:api": "ts-node scripts/auth-create-job.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@google-cloud/dataflow": "^1.1.0",
