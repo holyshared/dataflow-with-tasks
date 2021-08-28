@@ -35,6 +35,7 @@ steps:
   - functions
   - deploy
   - exampleTask
+  - --source=.
   - --region=${_REGION}
   - --trigger-http
   - --runtime=nodejs14
