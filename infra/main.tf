@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "google-beta" {
-  region = "asia-northeast1"
+  region = var.location
 }
 
 module "project-factory" {
@@ -28,7 +28,9 @@ module "project-factory" {
     "dataflow.googleapis.com",
     "logging.googleapis.com",
     "storage.googleapis.com",
-    "cloudbuild.googleapis.com"
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudtasks.googleapis.com"
   ]
 }
 
@@ -38,7 +40,7 @@ resource "google_service_account" "dataflow_service_account" {
   display_name = "dataflow for example"
 }
 
-resource "google_project_iam_member" "service_account_user" {
+resource "google_project_iam_member" "dataflow_service_account_user" {
   project = module.project-factory.project_id
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
@@ -56,18 +58,38 @@ resource "google_project_iam_member" "dataflow_worker" {
   member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
 }
 
-resource "google_project_iam_member" "object_manager" {
+resource "google_project_iam_member" "dataflow_object_manager" {
   project = module.project-factory.project_id
   role    = "roles/storage.objectAdmin"
   member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
 }
 
-# XXX remove?
-resource "google_project_iam_member" "build_editor" {
+resource "google_project_iam_member" "dataflow_task_enqueuer" {
   project = module.project-factory.project_id
-  role    = "roles/cloudbuild.builds.editor"
+  role    = "roles/cloudtasks.enqueuer"
   member  = "serviceAccount:${google_service_account.dataflow_service_account.email}"
 }
+
+
+# Function invoker
+resource "google_service_account" "dataflow_function_service_account" {
+  project      = module.project-factory.project_id
+  account_id   = "dataflow-function-invoker"
+  display_name = "dataflow for cloud tasks"
+}
+
+resource "google_project_iam_member" "function_invoker_service_account_user" {
+  project = module.project-factory.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.dataflow_function_service_account.email}"
+}
+
+resource "google_project_iam_member" "function_invoker" {
+  project = module.project-factory.project_id
+  role    = "roles/cloudfunctions.invoker"
+  member  = "serviceAccount:${google_service_account.dataflow_function_service_account.email}"
+}
+
 
 resource "time_rotating" "dataflow_key_rotation" {
   rotation_days = 30
@@ -107,7 +129,7 @@ resource "google_compute_firewall" "dataflow_firewall" {
 resource "google_storage_bucket" "logs" {
   project  = module.project-factory.project_id
   name     = "logs-${module.project-factory.project_id}"
-  location = "asia-northeast1"
+  location = var.location
 
   force_destroy = true
 }
@@ -115,7 +137,7 @@ resource "google_storage_bucket" "logs" {
 resource "google_storage_bucket" "flex_templates" {
   project  = module.project-factory.project_id
   name     = "flex-templates-${module.project-factory.project_id}"
-  location = "asia-northeast1"
+  location = var.location
 
   force_destroy = true
 }
@@ -136,11 +158,27 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
 
   substitutions = {
     _PROJECT_ID=module.project-factory.project_id
-    _REGION="asia-northeast1"
+    _REGION=var.location
     _IMAGE_NAME="extract_json_field"
     _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/extract_json_field.json"
     _SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_service_account.email
+    _FUNCTION_INVOKER_SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_function_service_account.email
+    _DATAFLOW_QUEUE=google_cloud_tasks_queue.dataflow_queue.name
   }
 
   filename = "cloudbuild.yml"
+}
+
+resource "google_cloud_tasks_queue" "dataflow_queue" {
+  name = "dataflow-queue"
+  project = module.project-factory.project_id
+  location = var.location
+  depends_on = [
+    google_app_engine_application.dataflow_app
+  ]
+}
+
+resource "google_app_engine_application" "dataflow_app" {
+  project = module.project-factory.project_id
+  location_id = var.location
 }
