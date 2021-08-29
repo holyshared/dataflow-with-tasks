@@ -1,16 +1,13 @@
-import winston from 'winston'
-import { LoggingWinston } from '@google-cloud/logging-winston'
+import { createLogger } from 'bunyan'
+import { LoggingBunyan } from '@google-cloud/logging-bunyan'
 
-const loggingWinston = new LoggingWinston({
+const loggingBunyan = new LoggingBunyan({
   projectId: process.env.GCP_PROJECT_ID,
   logName: "dataflow",
-  level: 'info',
-})
+});
 
-export const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    loggingWinston,
+export const logger = createLogger({
+  streams: [
+    loggingBunyan.stream('info'),
   ],
 })
