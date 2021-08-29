@@ -173,11 +173,32 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
     _IMAGE_NAME="extract_json_field"
     _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/extract_json_field.json"
     _SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_service_account.email
-    _FUNCTION_INVOKER_SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_function_service_account.email
-    _DATAFLOW_QUEUE=google_cloud_tasks_queue.dataflow_queue.name
   }
 
-  filename = "cloudbuild.yml"
+  filename = "flex-template.cloudbuild.yml"
+}
+
+resource "google_cloudbuild_trigger" "function_trigger" {
+  name = "task-functions"
+  project = module.project-factory.project_id
+
+  github {
+    name  = "dataflow-with-tasks"
+    owner = "holyshared"
+
+    push {
+      branch       = "main"
+      invert_regex = false
+    }
+  }
+
+  substitutions = {
+    _PROJECT_ID=module.project-factory.project_id
+    _REGION=var.location
+    _SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_function_service_account.email
+  }
+
+  filename = "function.cloudbuild.yml"
 }
 
 resource "google_cloud_tasks_queue" "dataflow_queue" {

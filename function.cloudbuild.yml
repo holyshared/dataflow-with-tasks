@@ -1,0 +1,21 @@
+steps:
+- name: node
+  entrypoint: yarn
+  args: ['install']
+
+- name: node
+  entrypoint: yarn
+  args: ['build']
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - exampleTask
+  - --source=.
+  - --region=${_REGION}
+  - --trigger-http
+  - --runtime=nodejs14
+  - --set-env-vars=GCP_PROJECT_ID=${_PROJECT_ID},GCP_REGION=${_REGION}
+  - --service-account=${_SERVICE_ACCOUNT_EMAIL}
