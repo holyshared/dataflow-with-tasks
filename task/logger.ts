@@ -2,7 +2,9 @@ import winston from 'winston'
 import { LoggingWinston } from '@google-cloud/logging-winston'
 
 const loggingWinston = new LoggingWinston({
-  logName: "dataflow"
+  projectId: process.env.GCP_PROJECT_ID,
+  logName: "dataflow",
+  level: 'info',
 })
 
 export const logger = winston.createLogger({
