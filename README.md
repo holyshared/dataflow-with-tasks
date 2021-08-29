@@ -46,3 +46,25 @@ python -m \
   --service_account_email [SERVICE_ACCOUNT_EMAIL] \
   --subnetwork=https://www.googleapis.com/compute/v1/projects/[PROJECT_ID]/regions/asia-northeast1/subnetworks/[NETWORK_NAME]
 ```
+
+## Run dataflow enqueue task
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=[CREDENTIALS_FILE] \
+python -m \
+  example.extract_json_field \
+  --project \
+  [PROJECT_ID] \
+  --runner DataflowRunner \
+  --temp_location \
+  gs://[BUCKET_NAME]/temp \
+  --output \
+  gs://[BUCKET_NAME]/results/output \
+  --queue \
+  [QUEUE_NAME] \
+  --job_name dataflow-intro \
+  --region asia-northeast1 \
+  --service_account_email [SERVICE_ACCOUNT_EMAIL] \
+  --subnetwork=https://www.googleapis.com/compute/v1/projects/[PROJECT_ID]/regions/asia-northeast1/subnetworks/[NETWORK_NAME]
+  --requirements_file ./requirements.txt
+```
