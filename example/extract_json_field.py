@@ -1,5 +1,3 @@
-# pytype: skip-file
-
 import argparse
 import logging
 import json
@@ -14,8 +12,6 @@ from apache_beam.options.pipeline_options import SetupOptions
 from google.cloud.tasks_v2beta3.services.cloud_tasks import CloudTasksClient
 from google.cloud.tasks_v2beta3.types import CreateTaskRequest, Task, HttpRequest, OidcToken
 from google.cloud.tasks_v2beta3 import HttpMethod
-
-client = CloudTasksClient()
 
 """
 Extract a specific field from a json string
@@ -44,6 +40,7 @@ def enqueue_task(queue_path, url, service_account_email):
       task=task
     )
 
+    client = CloudTasksClient()
     client.create_task(request=request)
 
     return element
