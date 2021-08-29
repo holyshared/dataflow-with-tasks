@@ -11,6 +11,11 @@
       "name": "output",
       "label": "ID attribute file",
       "helpText": "ID attribute file retrieved from json"
+    },
+    {
+      "name": "queue",
+      "label": "queue name",
+      "helpText": "queue name"
     }
   ]
 }
