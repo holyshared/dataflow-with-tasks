@@ -1,6 +1,6 @@
 {
-  "name": "Extract id attribute",
-  "description": "Extract id attribute from json file log",
+  "name": "Enqueue from json files",
+  "description": "Enqueue from json log files",
   "parameters": [
     {
       "name": "input",
@@ -9,13 +9,8 @@
     },
     {
       "name": "output",
-      "label": "ID attribute file",
-      "helpText": "ID attribute file retrieved from json"
-    },
-    {
-      "name": "queue",
-      "label": "queue name",
-      "helpText": "queue name"
+      "label": "output queue name",
+      "helpText": ""
     }
   ]
 }
