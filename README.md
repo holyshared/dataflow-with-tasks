@@ -59,8 +59,6 @@ python -m \
   --temp_location \
   gs://[BUCKET_NAME]/temp \
   --output \
-  gs://[BUCKET_NAME]/results/output \
-  --queue \
   [QUEUE_NAME] \
   --job_name dataflow-intro \
   --region asia-northeast1 \
