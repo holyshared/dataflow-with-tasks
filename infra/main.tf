@@ -154,7 +154,7 @@ resource "google_storage_bucket" "flex_templates" {
 }
 
 resource "google_cloudbuild_trigger" "flex_template_trigger" {
-  name = "extract-json-field"
+  name = "dataflow-cloud-tasks"
   project = module.project-factory.project_id
 
   github {
@@ -170,8 +170,8 @@ resource "google_cloudbuild_trigger" "flex_template_trigger" {
   substitutions = {
     _PROJECT_ID=module.project-factory.project_id
     _REGION=var.location
-    _IMAGE_NAME="extract_json_field"
-    _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/extract_json_field.json"
+    _IMAGE_NAME="dataflow_cloud_tasks"
+    _TEMPLATE_PATH="gs://${google_storage_bucket.flex_templates.name}/dataflow/flex_templates/cloud_tasks.json"
     _SERVICE_ACCOUNT_EMAIL=google_service_account.dataflow_service_account.email
   }
 
