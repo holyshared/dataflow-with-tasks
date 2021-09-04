@@ -23,28 +23,59 @@ def extract_json(element):
   entry = json.loads(element)
   return entry["id"]
 
-def enqueue_task(queue_path, url, service_account_email):
-  def _enqueue_task(element):
+def cloud_functions_url(region, project)
+  return 'https://{}-{}.cloudfunctions.net/exampleTask'.format(region, project)
+
+class EnqueueTask(beam.DoFn):
+  def __init__(self, queue_path, url, service_account_email)
+    super(EnqueueTask, self).__init__()
+    self.queue_path = queue_path
+    self.url = url
+    self.service_account_email = service_account_email
+
+  def process(self, element):
     payload = json.dumps({
       'id': element
     }).encode()
 
-    oidc_token = OidcToken(service_account_email=service_account_email)
+    oidc_token = OidcToken(service_account_email=self.service_account_email)
     headers = { "Content-type": "application/json" }
-    http_request = HttpRequest(url=url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
+    http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
 
     task = Task(http_request=http_request)
 
+    return [task]
+
+class TaskFormJSON(beam.PTransform)
+  def __init__(self, queue_path, url, service_account_email):
+    super(TaskFormJSON, self).__init__()
+    self.task_creator = EnqueueTask(queue_path, url, service_account_email)
+
+  def expand(self, pcoll):
+    return pcoll | beam.Map(extract_json) | beam.PerDo(self.task_creator)
+
+
+
+class Enqueue(beam.DoFn):
+  def __init__(self, client, queue_path)
+    super(Enqueue, self).__init__()
+    self.client = client
+    self.queue_path = queue_path
+
+  def process(self, task):
     request = CreateTaskRequest(
-      parent=queue_path,
+      parent=self.queue_path,
       task=task
     )
+    [self.client.create_task(request)]
 
-    client = CloudTasksClient()
-    client.create_task(request=request)
+class EnqueueToCloudTasks(beam.PTransform):
+  def __init__(self, client, project, region, queue):
+    super(EnqueueToCloudTasks, self).__init__()
+    self.enqueue = Enqueue(client=client, queue_path=client.queue_path(project, region, queue))
 
-    return element
-  return _enqueue_task
+  def expand(self, pcoll):
+    return pcoll | beam.PerDo(self.enqueue)
 
 def run(argv=None, save_main_session=True):
   parser = argparse.ArgumentParser()
@@ -55,11 +86,6 @@ def run(argv=None, save_main_session=True):
       help='Input file to process.')
   parser.add_argument(
       '--output',
-      dest='output',
-      required=True,
-      help='Output file to write results to.')
-  parser.add_argument(
-      '--queue',
       dest='queue',
       required=True,
       help='Queue name to be enqueued')
@@ -70,22 +96,15 @@ def run(argv=None, save_main_session=True):
 
   options = pipeline_options.get_all_options()
 
-  task_creator = enqueue_task(
-    queue_path=CloudTasksClient.queue_path(
-      options['project'],
-      options['region'],
-      known_args.queue
-    ),
-    url='https://{}-{}.cloudfunctions.net/exampleTask'.format(options['region'], options['project']),
-    service_account_email=options['service_account_email']
-  )
-
   with beam.Pipeline(options=pipeline_options) as p:
-    lines = p | 'Read' >> ReadFromText(known_args.input)
+    lines = p | ReadFromText(known_args.input)
 
-    output = lines | 'Pick' >> beam.Map(extract_json) | 'Enqueue' >> beam.Map(task_creator)
+    output = lines | TaskFormJSON(
+      url=cloud_functions_url(options['region'], options['project']),
+      service_account_email=options['service_account_email']
+    )
 
-    output | 'Write' >> WriteToText(known_args.output)
+    output | EnqueueToCloudTasks(client=CloudTasksClient(), project=options['project'], region=options['region'], queue=known_args.output)
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.INFO)
