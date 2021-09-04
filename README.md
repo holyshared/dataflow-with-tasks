@@ -52,7 +52,7 @@ python -m \
 ```
 GOOGLE_APPLICATION_CREDENTIALS=[CREDENTIALS_FILE] \
 python -m \
-  example.extract_json_field \
+  example.cloud_tasks \
   --project \
   [PROJECT_ID] \
   --runner DataflowRunner \

@@ -10,7 +10,7 @@ client.launchFlexTemplate({
   projectId: process.env.GCP_PROJECT_ID,
   location: process.env.GCP_REGION,
   launchParameter: {
-    jobName: `extract-json-field-${v4()}`,
+    jobName: `dataflow-cloud-tasks-${v4()}`,
     containerSpecGcsPath: process.env.GCP_CONTAINER_SPEC_PATH,
     parameters: {
       input: process.env.GCP_INPUT,

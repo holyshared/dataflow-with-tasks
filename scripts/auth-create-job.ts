@@ -14,7 +14,7 @@ const launchFlexTemplate = async (): Promise<{ job:{ name: string } }> => {
     method: "POST",
     body: JSON.stringify({
       launchParameter: {
-        jobName: `extract-json-field-${v4()}`,
+        jobName: `dataflow-cloud-tasks-${v4()}`,
         containerSpecGcsPath: process.env.GCP_CONTAINER_SPEC_PATH,
         parameters: {
           input: process.env.GCP_INPUT,
