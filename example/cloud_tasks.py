@@ -4,7 +4,6 @@ import json
 
 import apache_beam as beam
 from apache_beam.io import ReadFromText
-from apache_beam.io import WriteToText
 
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
@@ -23,13 +22,11 @@ def extract_json(element):
   entry = json.loads(element)
   return entry["id"]
 
-def cloud_functions_url(region, project)
+def cloud_functions_url(region, project):
   return 'https://{}-{}.cloudfunctions.net/exampleTask'.format(region, project)
 
 class EnqueueTask(beam.DoFn):
-  def __init__(self, queue_path, url, service_account_email)
-    super(EnqueueTask, self).__init__()
-    self.queue_path = queue_path
+  def __init__(self, url, service_account_email):
     self.url = url
     self.service_account_email = service_account_email
 
@@ -46,19 +43,20 @@ class EnqueueTask(beam.DoFn):
 
     return [task]
 
-class TaskFormJSON(beam.PTransform)
-  def __init__(self, queue_path, url, service_account_email):
-    super(TaskFormJSON, self).__init__()
-    self.task_creator = EnqueueTask(queue_path, url, service_account_email)
+class TaskFormJSON(beam.PTransform):
+  def __init__(self, url, service_account_email):
+    # TODO(BEAM-6158): Revert the workaround once we can pickle super() on py3.
+    # super(TaskFormJSON, self).__init__()
+    beam.PTransform.__init__(self)
+    self.task_creator = EnqueueTask(url, service_account_email)
 
   def expand(self, pcoll):
-    return pcoll | beam.Map(extract_json) | beam.PerDo(self.task_creator)
+    return pcoll | beam.Map(extract_json) | beam.ParDo(self.task_creator)
 
 
 
 class Enqueue(beam.DoFn):
-  def __init__(self, client, queue_path)
-    super(Enqueue, self).__init__()
+  def __init__(self, client, queue_path):
     self.client = client
     self.queue_path = queue_path
 
@@ -70,12 +68,15 @@ class Enqueue(beam.DoFn):
     [self.client.create_task(request)]
 
 class EnqueueToCloudTasks(beam.PTransform):
-  def __init__(self, client, project, region, queue):
-    super(EnqueueToCloudTasks, self).__init__()
-    self.enqueue = Enqueue(client=client, queue_path=client.queue_path(project, region, queue))
+  def __init__(self, project, region, queue, client = None):
+    # TODO(BEAM-6158): Revert the workaround once we can pickle super() on py3.
+    # super(EnqueueToCloudTasks, self).__init__()
+    beam.PTransform.__init__(self)
+    self.client = CloudTasksClient() if client == None else client
+    self.enqueue = Enqueue(client=client, queue_path=self.client.queue_path(project, region, queue))
 
   def expand(self, pcoll):
-    return pcoll | beam.PerDo(self.enqueue)
+    return pcoll | beam.ParDo(self.enqueue)
 
 def run(argv=None, save_main_session=True):
   parser = argparse.ArgumentParser()
@@ -104,7 +105,7 @@ def run(argv=None, save_main_session=True):
       service_account_email=options['service_account_email']
     )
 
-    output | EnqueueToCloudTasks(client=CloudTasksClient(), project=options['project'], region=options['region'], queue=known_args.output)
+    output | EnqueueToCloudTasks(project=options['project'], region=options['region'], queue=known_args.queue)
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.INFO)
