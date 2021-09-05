@@ -9,7 +9,8 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
 from google.cloud.tasks_v2beta3.services.cloud_tasks import CloudTasksClient
-from google.cloud.tasks_v2beta3.types import CreateTaskRequest, Task, HttpRequest, OidcToken
+#from google.cloud.tasks_v2beta3.types import CreateTaskRequest, Task, HttpRequest, OidcToken
+from google.cloud.tasks_v2beta3.types import CreateTaskRequest
 from google.cloud.tasks_v2beta3 import HttpMethod
 
 """
@@ -25,7 +26,7 @@ def extract_json(element):
 def cloud_functions_url(region, project):
   return 'https://{}-{}.cloudfunctions.net/exampleTask'.format(region, project)
 
-class EnqueueTask(beam.DoFn):
+class CreateTask(beam.DoFn):
   def __init__(self, url, service_account_email):
     self.url = url
     self.service_account_email = service_account_email
@@ -35,12 +36,23 @@ class EnqueueTask(beam.DoFn):
       'id': element
     }).encode()
 
-    oidc_token = OidcToken(service_account_email=self.service_account_email)
+#    oidc_token = OidcToken(service_account_email=self.service_account_email)
     headers = { "Content-type": "application/json" }
-    http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
+  #  http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
 
-    task = Task(http_request=http_request)
+#    task = Task(http_request=http_request)
 
+    task = {
+      'http_request': {
+        'url': self.url,
+        'http_method': HttpMethod.POST,
+        'headers': headers,
+        'body': payload,
+        'oidc_token': {
+          'service_account_email': self.service_account_email
+        }
+      }
+    }
     return [task]
 
 class TaskFormJSON(beam.PTransform):
@@ -48,32 +60,37 @@ class TaskFormJSON(beam.PTransform):
     # TODO(BEAM-6158): Revert the workaround once we can pickle super() on py3.
     # super(TaskFormJSON, self).__init__()
     beam.PTransform.__init__(self)
-    self.task_creator = EnqueueTask(url, service_account_email)
+    self.create = CreateTask(url=url, service_account_email=service_account_email)
 
   def expand(self, pcoll):
-    return pcoll | beam.Map(extract_json) | beam.ParDo(self.task_creator)
+    return pcoll | beam.Map(extract_json) | beam.ParDo(self.create)
 
 
 
 class Enqueue(beam.DoFn):
-  def __init__(self, client, queue_path):
-    self.client = client
-    self.queue_path = queue_path
+  def __init__(self, project, region, queue):
+    self.project = project
+    self.region = region
+    self.queue = queue
+
+  def start_bundle(self):
+    self.client = CloudTasksClient()
+    self.queue_path = self.client.queue_path(self.project, self.region, self.queue)
 
   def process(self, task):
     request = CreateTaskRequest(
       parent=self.queue_path,
       task=task
     )
-    [self.client.create_task(request)]
+    created_task = self.client.create_task(request)
+    return [created_task.name]
 
 class EnqueueToCloudTasks(beam.PTransform):
-  def __init__(self, project, region, queue, client = None):
+  def __init__(self, project, region, queue):
     # TODO(BEAM-6158): Revert the workaround once we can pickle super() on py3.
     # super(EnqueueToCloudTasks, self).__init__()
     beam.PTransform.__init__(self)
-    self.client = CloudTasksClient() if client == None else client
-    self.enqueue = Enqueue(client=client, queue_path=self.client.queue_path(project, region, queue))
+    self.enqueue = Enqueue(project=project, region=region, queue=queue)
 
   def expand(self, pcoll):
     return pcoll | beam.ParDo(self.enqueue)
