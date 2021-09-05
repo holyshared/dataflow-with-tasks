@@ -8,10 +8,10 @@ from apache_beam.io import ReadFromText
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
-from google.cloud.tasks_v2beta3.services.cloud_tasks import CloudTasksClient
-#from google.cloud.tasks_v2beta3.types import CreateTaskRequest, Task, HttpRequest, OidcToken
-from google.cloud.tasks_v2beta3.types import CreateTaskRequest
-from google.cloud.tasks_v2beta3 import HttpMethod
+from google.cloud.tasks_v2.services.cloud_tasks import CloudTasksClient
+from google.cloud.tasks_v2.types import CreateTaskRequest, Task, HttpRequest, OidcToken
+from google.cloud.tasks_v2.types import CreateTaskRequest
+from google.cloud.tasks_v2 import HttpMethod
 
 """
 Extract a specific field from a json string
@@ -26,8 +26,24 @@ def extract_json(element):
 def cloud_functions_url(region, project):
   return 'https://{}-{}.cloudfunctions.net/exampleTask'.format(region, project)
 
+class TaskRequestFactory:
+  def __init__(self, url: str, service_account_email: str, payload: str):
+    self.url = url
+    self.service_account_email = service_account_email
+    self.payload = payload
+
+  def create_request_for(self, queue_path: str):
+    oidc_token = OidcToken(service_account_email=self.service_account_email)
+    headers = { "Content-type": "application/json" }
+    http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=self.payload, oidc_token=oidc_token)
+
+    return CreateTaskRequest(
+      parent=queue_path,
+      task=Task(http_request=http_request)
+    )
+
 class CreateTask(beam.DoFn):
-  def __init__(self, url, service_account_email):
+  def __init__(self, url: str, service_account_email: str):
     self.url = url
     self.service_account_email = service_account_email
 
@@ -36,24 +52,24 @@ class CreateTask(beam.DoFn):
       'id': element
     }).encode()
 
-#    oidc_token = OidcToken(service_account_email=self.service_account_email)
-    headers = { "Content-type": "application/json" }
-  #  http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
-
+   # oidc_token = OidcToken(service_account_email=self.service_account_email)
+  #  headers = { "Content-type": "application/json" }
+ #   http_request = HttpRequest(url=self.url, http_method=HttpMethod.POST, headers=headers, body=payload, oidc_token=oidc_token)
+#
 #    task = Task(http_request=http_request)
 
-    task = {
-      'http_request': {
-        'url': self.url,
-        'http_method': HttpMethod.POST,
-        'headers': headers,
-        'body': payload,
-        'oidc_token': {
-          'service_account_email': self.service_account_email
-        }
-      }
-    }
-    return [task]
+#    task = {
+ #     'http_request': {
+  #      'url': self.url,
+   #     'http_method': HttpMethod.POST,
+    #    'headers': headers,
+     #   'body': payload,
+      #  'oidc_token': {
+       #   'service_account_email': self.service_account_email
+#        }
+ #     }
+  #  }
+    return [TaskRequestFactory(url=self.url, service_account_email=self.service_account_email, payload=payload)]
 
 class TaskFormJSON(beam.PTransform):
   def __init__(self, url, service_account_email):
@@ -77,11 +93,8 @@ class Enqueue(beam.DoFn):
     self.client = CloudTasksClient()
     self.queue_path = self.client.queue_path(self.project, self.region, self.queue)
 
-  def process(self, task):
-    request = CreateTaskRequest(
-      parent=self.queue_path,
-      task=task
-    )
+  def process(self, factory):
+    request = factory.create_request_for(self.queue_path)
     created_task = self.client.create_task(request)
     return [created_task.name]
 
