@@ -43,7 +43,7 @@ class TaskRequestFactory:
         url=self._url,
         http_method=HttpMethod.POST,
         headers=headers,
-        body=self.payload,
+        body=self._payload,
         oidc_token=oidc_token)
 
     return CreateTaskRequest(
