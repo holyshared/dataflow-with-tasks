@@ -19,7 +19,6 @@ const launchFlexTemplate = async (): Promise<{ job:{ name: string } }> => {
         parameters: {
           input: process.env.GCP_INPUT,
           output: process.env.GCP_OUTPUT,
-          queue: process.env.DATAFLOW_QUEUE,
         },
         environment: {
           subnetwork: process.env.GCP_SUBNETWORK,
