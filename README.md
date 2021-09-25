@@ -28,25 +28,6 @@ terraform init
 terraform apply
 ```
 
-## Run dataflow example
-
-```
-GOOGLE_APPLICATION_CREDENTIALS=[CREDENTIALS_FILE] \
-python -m \
-  apache_beam.examples.wordcount \
-  --project \
-  [PROJECT_ID] \
-  --runner DataflowRunner \
-  --temp_location \
-  gs://[BUCKET_NAME]/temp \
-  --output \
-  gs://[BUCKET_NAME]/results/output \
-  --job_name dataflow-intro \
-  --region asia-northeast1 \
-  --service_account_email [SERVICE_ACCOUNT_EMAIL] \
-  --subnetwork=https://www.googleapis.com/compute/v1/projects/[PROJECT_ID]/regions/asia-northeast1/subnetworks/[NETWORK_NAME]
-```
-
 ## Run dataflow enqueue task
 
 ```
@@ -65,4 +46,11 @@ python -m \
   --service_account_email [SERVICE_ACCOUNT_EMAIL] \
   --subnetwork=https://www.googleapis.com/compute/v1/projects/[PROJECT_ID]/regions/asia-northeast1/subnetworks/[NETWORK_NAME]
   --requirements_file ./requirements.txt
+```
+
+## Code format
+
+```shell
+pip install autopep8
+autopep8 --in-place --aggressive --aggressive --ignore=E111,E114 --indent-size=2 --recursive example
 ```
