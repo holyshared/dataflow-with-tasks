@@ -10,7 +10,7 @@
     {
       "name": "output",
       "label": "output queue name",
-      "helpText": ""
+      "helpText": "output queue name of Cloud Tasks"
     }
   ]
 }
